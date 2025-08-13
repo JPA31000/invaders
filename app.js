@@ -55,7 +55,7 @@
   const qIndexEl=document.getElementById('qIndex'), qTotalEl=document.getElementById('qTotal');
   const timeEl=document.getElementById('time'), questionTextEl=document.getElementById('questionText');
   const choicesChipsEl=document.getElementById('choicesChips'), noticeEl=document.getElementById('notice');
-  const overlay=document.getElementById('overlay'); const overlayStart=document.getElementById('overlayStart');
+  const overlay=document.getElementById('overlay'); const newGameBtn=document.getElementById('newGameBtn');
   const startBtn=document.getElementById('startBtn'); const pauseBtn=document.getElementById('pauseBtn');
   const downloadCsvBtn=document.getElementById('downloadCsv'); const fsBtn=document.getElementById('fsBtn');
   const difficultySel=document.getElementById('difficulty'), themePlaySel=document.getElementById('themePlay');
@@ -291,7 +291,7 @@
   }
   applyDifficulty();
 
-  overlayStart.onclick=startGame; startBtn.onclick=startGame; replayBtn.onclick=startGame;
+  newGameBtn.onclick=startGame; startBtn.onclick=startGame; replayBtn.onclick=startGame;
   pauseBtn.onclick=togglePause; fsBtn.onclick=toggleFullscreen; downloadCsvBtn.onclick=exportCSV;
   difficultySel.onchange=applyDifficulty; themePlaySel.onchange=themeChanged;
 
