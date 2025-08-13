@@ -32,6 +32,7 @@
   const gameContainer = document.getElementById('game-container');
   const newGameBtn = document.getElementById('newGameBtn');
 
+  const screenEl = document.getElementById('screen');
   const canvas=document.getElementById('game'), ctx=canvas.getContext('2d');
   const scoreEl=document.getElementById('score'), livesIconsEl=document.getElementById('livesIcons');
   const qIndexEl=document.getElementById('qIndex'), qTotalEl=document.getElementById('qTotal');
@@ -79,12 +80,24 @@
 
   const keys={left:false,right:false,shoot:false};
   document.addEventListener('keydown',e=>{
-    if(e.key==='ArrowLeft') keys.left=true;
-    if(e.key==='ArrowRight') keys.right=true;
-    if(e.key===' '){ keys.shoot=true; e.preventDefault(); }
-    if(e.key.toLowerCase()==='p'){ togglePause(); }
+    const key = e.key.toLowerCase();
+    if (key === 'arrowleft' || key === 'q') keys.left = true;
+    if (key === 'arrowright' || key === 'd') keys.right = true;
+    if (key === ' '){ keys.shoot=true; e.preventDefault(); }
+    if (key === 'p'){ togglePause(); }
   });
-  document.addEventListener('keyup',e=>{ if(e.key==='ArrowLeft') keys.left=false; if(e.key==='ArrowRight') keys.right=false; if(e.key===' ') keys.shoot=false; });
+  document.addEventListener('keyup',e=>{
+    const key = e.key.toLowerCase();
+    if (key === 'arrowleft' || key === 'q') keys.left = false;
+    if (key === 'arrowright' || key === 'd') keys.right = false;
+    if (key === ' ') keys.shoot = false;
+  });
+  screenEl.addEventListener('mousedown', (e) => {
+    if (state.running && !state.paused && e.button === 0) {
+      shoot();
+    }
+  });
+
 
   function setLivesIcons(){ livesIconsEl.textContent='🛸'.repeat(state.lives); }
   function togglePause(){ if(!state.running) return; state.paused=!state.paused; notice(state.paused?'PAUSE':''); }
@@ -94,9 +107,12 @@
   function getBankFor(key){ return (BANKS && BANKS[key]) ? BANKS[key] : []; }
 
   function startGame(){
-    window.scrollTo(0, 0);
     startScreen.hidden = true;
     gameContainer.hidden = false;
+    // This ensures the browser view is at the very top of the game page
+    requestAnimationFrame(() => {
+        window.scrollTo(0, 0);
+    });
 
     const bankKey=themePlaySel.value || getDefaultKey();
     const base=getBankFor(bankKey);
@@ -257,7 +273,7 @@
   }
   function loop(ts){ const dt=Math.min(0.035,(ts-last)/1000); last=ts; update(dt); draw(); if(state.running) requestAnimationFrame(loop); }
 
-  function playerRect(){ const p=state.player; const w=44*p.sizeFactor, h=18*p.sizeFactor; return {x:p.x-w/2,y:p.y-h/2,w:w,h:h}; }
+  function playerRect(){ const p=state.player; const w=44*p.sizeFactor, h=18*p.zFactor; return {x:p.x-w/2,y:p.y-h/2,w:w,h:h}; }
   function rectsOverlap(a,b){ return (a.x<b.x+b.w && a.x+a.w>b.x && a.y<b.y+b.h && a.y+a.h>b.y); }
   function roundRect(ctx,x,y,w,h,r,fill){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); if(fill) ctx.fill(); else ctx.stroke(); }
   function drawStars(){ for(let i=0;i<90;i++){ const x=(i*97%canvas.width), y=(i*41 + Math.floor((state.timeLeft*20 + i*13)))%canvas.height; ctx.fillStyle= i%9===0? '#a3c5ff' : (i%5===0? '#7aa4ff' : '#3b54a3'); ctx.fillRect(x,y,2,2); } }
