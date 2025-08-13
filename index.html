@@ -18,6 +18,24 @@
       <br/>Tir : <b>Barre d'Espace</b>
       <br/>Pause : <b>P</b>
     </p>
+
+    <div class="start-options">
+      <div class="option-group">
+        <label for="themePlay">Thème :</label>
+        <select id="themePlay" aria-label="Choisir le thème de jeu">
+          <option value="" disabled selected>Chargement…</option>
+        </select>
+      </div>
+      <div class="option-group">
+        <label for="difficulty">Difficulté :</label>
+        <select id="difficulty" aria-label="Choisir la difficulté">
+          <option value="easy">Facile</option>
+          <option value="normal" selected>Normal</option>
+          <option value="hard">Difficile</option>
+        </select>
+      </div>
+    </div>
+
     <button id="newGameBtn" class="pixel-button">New Game</button>
   </div>
 
@@ -26,20 +44,7 @@
       <div class="glow"></div>
       <h1>QUIZ INVADERS • BTP — QCM</h1>
       <div class="controls">
-        <label for="themePlay">Thème</label>
-        <select id="themePlay" aria-label="Choisir le thème de jeu">
-          <option value="" disabled selected>Chargement…</option>
-        </select>
-
-        <label for="difficulty">Difficulté</label>
-        <select id="difficulty" aria-label="Choisir la difficulté">
-          <option value="easy">Facile</option>
-          <option value="normal" selected>Normal</option>
-          <option value="hard">Difficile</option>
-        </select>
-
         <label class="sound"><input id="sound" type="checkbox" /> Son</label>
-
         <button id="pauseBtn" class="ghost" title="P">Pause</button>
       </div>
     </header>

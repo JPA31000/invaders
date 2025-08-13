@@ -90,17 +90,11 @@
   function togglePause(){ if(!state.running) return; state.paused=!state.paused; notice(state.paused?'PAUSE':''); }
   function notice(txt,color){ noticeEl.textContent=txt||''; noticeEl.style.color=color||'#fff'; if(txt){ setTimeout(()=>{ if(noticeEl.textContent===txt) noticeEl.textContent=''; }, 900);}}
 
-  function themeChanged(){
-    const base=getBankFor(themePlaySel.value); qTotalEl.textContent=base.length;
-    if(state.running){ notice('Thème changé — une nouvelle partie appliquera le changement'); }
-    else{ questionTextEl.textContent=`Thème sélectionné : ${themePlaySel.value}`; }
-  }
-
   function getDefaultKey(){ return (themePlaySel.options.length>0? themePlaySel.options[0].value : (BANK_KEYS[0]||'')); }
   function getBankFor(key){ return (BANKS && BANKS[key]) ? BANKS[key] : []; }
 
   function startGame(){
-    // --- Show game container, hide start screen ---
+    window.scrollTo(0, 0);
     startScreen.hidden = true;
     gameContainer.hidden = false;
 
@@ -140,7 +134,8 @@
     const tmp=q.choices.map((t,i)=>({t,i})); for(let i=tmp.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [tmp[i],tmp[j]]=[tmp[j],tmp[i]]; }
     q.choices=tmp.map(o=>o.t); q.correct=tmp.findIndex(o=>o.i===q.correct);
     state.currentQ=q; qIndexEl.textContent=(state.qIndex+1);
-    questionTextEl.textContent=`${q.q} — Thème : ${themePlaySel.value}`; renderChoiceChips(q);
+    questionTextEl.textContent=`${q.q}`; // Show only the question here
+    renderChoiceChips(q);
     const labels='ABCDEFGHIJKLMNOPQRSTUVWXYZ'; const n=q.choices.length; state.enemies=[];
     const margin=70, spacing=(canvas.width-2*margin)/n, y0=120;
     for(let i=0;i<n;i++){
@@ -150,9 +145,16 @@
       state.enemies.push({x:x,y:y,fw:fw,fh:fh,scale:scale,sprite:sprite,letter:labels[i],text:q.choices[i],correct:(i===q.correct),alive:true});
     }
   }
+
   function renderChoiceChips(q){
-    choicesChipsEl.innerHTML=''; const labels='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    q.choices.forEach((c,i)=>{ const chip=document.createElement('span'); chip.className='chip'; chip.textContent=`${labels[i]}) ${c}`; choicesChipsEl.appendChild(chip); });
+    choicesChipsEl.innerHTML='';
+    const labels='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    q.choices.forEach((c,i)=>{
+      const choiceEl = document.createElement('div');
+      choiceEl.className = 'choice-item'; // Use new class for vertical layout
+      choiceEl.textContent = `${labels[i]}) ${c}`;
+      choicesChipsEl.appendChild(choiceEl);
+    });
   }
 
   function setupShields(){ state.shields=[]; const Y=canvas.height-150, Wsh=110, Hsh=36; const centers=[canvas.width*0.22,canvas.width*0.5,canvas.width*0.78]; for(const cx of centers){ state.shields.push({x:cx-Wsh/2, y:Y, w:Wsh, h:Hsh, hp:18, maxhp:18}); } }
@@ -285,8 +287,7 @@
   pauseBtn.onclick=togglePause;
   downloadCsvBtn.onclick=exportCSV;
   difficultySel.onchange=applyDifficulty;
-  themePlaySel.onchange=themeChanged;
-
+  
   async function init(){
     try{
       const res=await fetch('questions-btp.json',{cache:'no-store'});
@@ -301,9 +302,7 @@
       });
       const p=new URLSearchParams(location.search); const t=(p.get('theme')||'').trim();
       if(t && BANK_KEYS.includes(t)){ themePlaySel.value=t; } else { themePlaySel.selectedIndex=0; }
-      const base=getBankFor(themePlaySel.value);
-      qTotalEl.textContent=base.length;
-      questionTextEl.textContent=`Thème : ${themePlaySel.value} — Prêt à jouer !`;
+      
       applyDifficulty();
     }catch(e){
       console.warn('Échec du chargement des questions (JSON)', e);
