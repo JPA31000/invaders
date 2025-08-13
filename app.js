@@ -46,19 +46,20 @@
   const W=canvas.width, H=canvas.height;
 
   let state={ running:false, paused:false, over:false,
-    score:0, lives:3, timeLeft:120, startTime:0,
+    score:0, lives:3, timeLeft:240, startTime:0, // Game time is now 4 minutes
     bullets:[], enemyBullets:[], enemies:[], shields:[], bonuses:[],
     enemyDir:1, enemySpeed:40, enemyFireBase:1.6, enemyFireTimer:0, enemyBulletSpeedBase:160,
     player:{x:W/2, y:H-60, w:44, h:18, speed:370, cooldown:280, canShoot:true, sizeFactor:1},
     questionOrder:[], qIndex:0, currentQ:null,
     stats:[], difficulty:'normal',
     anim:{invaderPhase:0, invaderTimer:0},
-    totalCorrect:0, correctSinceSizeToggle:0, aliensBuffed:false, shieldSmall:false,
-    nextBonusTimer:7.0, powerups:{double:false, auto:false, untilDouble:0, untilAuto:0},
-    streak:0, bestStreak:0
+    nextBonusTimer:7.0,
+    powerups:{double:false, nx:false, untilDouble:0, untilNx:0}, // Renamed 'auto' to 'nx'
+    // New state variables for new rules
+    redBallCounter: 0,
+    wrongAnswersInRow: 0,
+    wrongAnswerTimestamps: []
   };
-  function currentMultiplier(){ const s=state.streak; if(s>=8) return 2.0; if(s>=5) return 1.5; if(s>=3) return 1.2; return 1.0; }
-  function updateHudStreak(){ document.getElementById('streak').textContent=state.streak; document.getElementById('bestStreak').textContent=state.bestStreak; document.getElementById('mult').textContent='×'+currentMultiplier().toFixed(1); }
 
   const SPRITES={
     invA:[["0011100","0100010","1000001","1011101","1111111","0100010","1000001"],
@@ -76,7 +77,33 @@
   }
   function drawPlayer(x,y,scaleFactor){ const scale=3*scaleFactor, frame=SPRITES.player[0], w=frame[0].length*scale, h=frame.length*scale; ctx.save(); ctx.translate(x-w/2,y-h/2); drawSprite(0,0,scale,'#66d8ff',frame); ctx.restore(); }
   function drawInvader(e){ const frame=SPRITES[e.sprite][state.anim.invaderPhase]; drawSprite(e.x,e.y,e.scale,'#8bb0ff',frame); ctx.save(); ctx.fillStyle='#cfe3ff'; ctx.font='bold 12px system-ui, sans-serif'; ctx.textAlign='center'; ctx.textBaseline='top'; ctx.fillText(e.letter, e.x+e.fw/2, e.y+e.fh+6); ctx.restore(); }
-  function drawBonus(b){ ctx.save(); ctx.translate(b.x,b.y); ctx.beginPath(); ctx.arc(0,0,10,0,Math.PI*2); ctx.fillStyle= b.type==='double' ? 'rgba(100,255,180,.9)' : 'rgba(255,230,120,.9)'; ctx.fill(); ctx.fillStyle='#00122a'; ctx.font='bold 10px system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(b.type==='double'?'2x':'AUTO',0,0); ctx.restore(); }
+  function drawBonus(b){
+    ctx.save();
+    ctx.translate(b.x, b.y);
+    ctx.beginPath();
+    ctx.arc(0, 0, 12, 0, Math.PI * 2);
+
+    let text = '', color = '';
+    switch(b.type) {
+      case 'double':  text = '2x'; color = 'rgba(100,255,180,.9)'; break;
+      case 'nx':      text = 'nx'; color = 'rgba(255,230,120,.9)'; break;
+      case 'shrink':  text = 'pti'; color = 'rgba(200, 150, 255, .9)'; break;
+      case 'redball': text = '';    color = 'rgba(239, 68, 68, .9)'; break;
+    }
+    ctx.fillStyle = color;
+    ctx.fill();
+    if(b.type === 'redball') {
+        ctx.strokeStyle = 'rgba(255, 150, 150, .9)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+    }
+    ctx.fillStyle = '#00122a';
+    ctx.font = 'bold 10px system-ui';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(text, 0, 1);
+    ctx.restore();
+  }
 
   const keys={left:false,right:false,shoot:false};
   document.addEventListener('keydown',e=>{
@@ -101,7 +128,7 @@
 
   function setLivesIcons(){ livesIconsEl.textContent='🛸'.repeat(state.lives); }
   function togglePause(){ if(!state.running) return; state.paused=!state.paused; notice(state.paused?'PAUSE':''); }
-  function notice(txt,color){ noticeEl.textContent=txt||''; noticeEl.style.color=color||'#fff'; if(txt){ setTimeout(()=>{ if(noticeEl.textContent===txt) noticeEl.textContent=''; }, 900);}}
+  function notice(txt,color){ noticeEl.textContent=txt||''; noticeEl.style.color=color||'#fff'; if(txt){ setTimeout(()=>{ if(noticeEl.textContent===txt) noticeEl.textContent=''; }, 1200);}}
 
   function getDefaultKey(){ return (themePlaySel.options.length>0? themePlaySel.options[0].value : (BANK_KEYS[0]||'')); }
   function getBankFor(key){ return (BANKS && BANKS[key]) ? BANKS[key] : []; }
@@ -109,7 +136,6 @@
   function startGame(){
     startScreen.hidden = true;
     gameContainer.hidden = false;
-    // This ensures the browser view is at the very top of the game page
     requestAnimationFrame(() => {
         window.scrollTo(0, 0);
     });
@@ -122,13 +148,17 @@
     downloadCsvBtn.hidden = true;
     overlay.hidden=true;
     state.running=true; state.paused=false; state.over=false;
-    state.score=0; state.lives=3; state.timeLeft=120; state.stats=[]; setLivesIcons();
+    state.score=0; state.lives=3; state.timeLeft=240; state.stats=[]; setLivesIcons();
     state.player.x=W/2; state.bullets=[]; state.enemyBullets=[]; state.enemies=[]; state.qIndex=0; state.shields=[]; state.bonuses=[]; notice('');
-    state.totalCorrect=0; state.correctSinceSizeToggle=0; state.aliensBuffed=false; state.shieldSmall=false; state.player.sizeFactor=1;
-    state.powerups={double:false,auto:false,untilDouble:0,untilAuto:0}; state.nextBonusTimer=7.0;
-    state.streak=0; state.bestStreak=0; updateHudStreak();
-    state.questionOrder=[...Array(base.length).keys()].sort(()=>Math.random()-0.5);
+    state.player.sizeFactor=1;
+    state.powerups={double:false, nx:false, untilDouble:0, untilNx:0};
+    // Reset new state variables
+    state.redBallCounter = 0;
+    state.wrongAnswersInRow = 0;
+    state.wrongAnswerTimestamps = [];
+    
     QUESTION_BANK=JSON.parse(JSON.stringify(base)); qTotalEl.textContent=QUESTION_BANK.length;
+    state.questionOrder=[...Array(QUESTION_BANK.length).keys()].sort(()=>Math.random()-0.5);
     nextQuestion(); setupShields(); state.startTime=performance.now(); last=performance.now();
     SFX.start(); requestAnimationFrame(loop);
   }
@@ -139,7 +169,7 @@
     downloadCsvBtn.hidden=false;
     const ok=state.stats.filter(s=>s.ok).length, total=state.stats.length||1, rate=Math.round(100*ok/total);
     overlay.querySelector('h2').textContent=`Game Over`;
-    overlay.querySelector('p.small').textContent = `Score final : ${state.score} — Réussite : ${rate}% — Meilleure série : ${state.bestStreak}`;
+    overlay.querySelector('p.small').textContent = `Score final : ${state.score} — Réussite : ${rate}%`;
   }
 
   let QUESTION_BANK=[];
@@ -150,7 +180,7 @@
     const tmp=q.choices.map((t,i)=>({t,i})); for(let i=tmp.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [tmp[i],tmp[j]]=[tmp[j],tmp[i]]; }
     q.choices=tmp.map(o=>o.t); q.correct=tmp.findIndex(o=>o.i===q.correct);
     state.currentQ=q; qIndexEl.textContent=(state.qIndex+1);
-    questionTextEl.textContent=`${q.q}`; // Show only the question here
+    questionTextEl.textContent=`${q.q}`;
     renderChoiceChips(q);
     const labels='ABCDEFGHIJKLMNOPQRSTUVWXYZ'; const n=q.choices.length; state.enemies=[];
     const margin=70, spacing=(canvas.width-2*margin)/n, y0=120;
@@ -167,20 +197,23 @@
     const labels='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     q.choices.forEach((c,i)=>{
       const choiceEl = document.createElement('div');
-      choiceEl.className = 'choice-item'; // Use new class for vertical layout
+      choiceEl.className = 'choice-item';
       choiceEl.textContent = `${labels[i]}) ${c}`;
       choicesChipsEl.appendChild(choiceEl);
     });
   }
 
   function setupShields(){ state.shields=[]; const Y=canvas.height-150, Wsh=110, Hsh=36; const centers=[canvas.width*0.22,canvas.width*0.5,canvas.width*0.78]; for(const cx of centers){ state.shields.push({x:cx-Wsh/2, y:Y, w:Wsh, h:Hsh, hp:18, maxhp:18}); } }
-  function shrinkShields(){ for(const s of state.shields){ const cx=s.x+s.w/2, cy=s.y+s.h/2; s.w=Math.round(s.w*.72); s.h=Math.round(s.h*.72); s.x=cx-s.w/2; s.y=cy-s.h/2; } }
+  function shrinkShields(){ for(const s of state.shields){ if(s.w > 40) { const cx=s.x+s.w/2, cy=s.y+s.h/2; s.w=Math.round(s.w*.72); s.h=Math.round(s.h*.72); s.x=cx-s.w/2; s.y=cy-s.h/2; } } }
 
   function shoot(){
     if(!state.running||state.paused) return; const p=state.player; if(!p.canShoot) return;
     if(state.powerups.double){ state.bullets.push({x:p.x-10*p.sizeFactor,y:p.y-20,vy:-520,w:3,h:10}); state.bullets.push({x:p.x+10*p.sizeFactor,y:p.y-20,vy:-520,w:3,h:10}); }
     else{ state.bullets.push({x:p.x,y:p.y-20,vy:-520,w:3,h:10}); }
-    p.canShoot=false; setTimeout(()=>p.canShoot=true,p.cooldown); SFX.fire();
+    p.canShoot=false;
+    const cooldown = state.powerups.nx ? 100 : p.cooldown; // Faster cooldown for nx
+    setTimeout(()=>p.canShoot=true,cooldown);
+    SFX.fire();
   }
   function enemyShoot(){
     const alive=state.enemies.filter(e=>e.alive); if(!alive.length) return;
@@ -189,23 +222,39 @@
   }
 
   function onCorrect(enemy){
-    const t=performance.now()-state.startTime; const base=120+(state.difficulty==='hard'?30:0);
-    state.streak+=1; state.bestStreak=Math.max(state.bestStreak,state.streak); updateHudStreak();
-    state.score+=Math.round(base*currentMultiplier()); notice('✔ Correct','var(--accent2)'); SFX.correct();
+    const t=performance.now()-state.startTime;
+    state.score += 120; // New scoring rule
+    notice('✔ Correct','var(--accent2)'); SFX.correct();
     state.stats.push({q:state.currentQ.q, theme:themePlaySel.value, choice:enemy.text, correctChoice:state.currentQ.choices[state.currentQ.correct], ok:true, ms:t});
-    state.totalCorrect+=1; state.correctSinceSizeToggle+=1;
-    if(state.totalCorrect>=3 && !state.aliensBuffed){ state.aliensBuffed=true; state.enemyFireBase=Math.max(0.6,state.enemyFireBase-0.5); state.enemyBulletSpeedBase+=80; notice('⚠️ Cadence ennemie ↑','var(--accent3)'); }
-    if(state.correctSinceSizeToggle>=2){ state.correctSinceSizeToggle=0; state.player.sizeFactor=(state.player.sizeFactor===1?2:1); notice(state.player.sizeFactor===2?'⬆ Taille x2':'⬇ Taille normale'); }
-    if(state.totalCorrect>=4 && !state.shieldSmall){ state.shieldSmall=true; shrinkShields(); notice('Boucliers réduits'); }
-    state.qIndex++; nextQuestion();
+    state.wrongAnswersInRow = 0; // Reset consecutive wrong answers
+    state.qIndex++;
+    nextQuestion();
   }
   function onWrong(enemy){
-    state.score=(state.score>120)?(state.score-120):0; state.streak=0; updateHudStreak();
-    if(state.difficulty==='hard') loseLife(); notice('✖ Faux','var(--danger)'); SFX.wrong();
-    const t=performance.now()-state.startTime; state.stats.push({q:state.currentQ.q, theme:themePlaySel.value, choice:enemy.text, correctChoice:state.currentQ.choices[state.currentQ.correct], ok:false, ms:t});
+    state.score = Math.max(0, state.score - 120); // New scoring rule
+    notice('✖ Faux','var(--danger)'); SFX.wrong();
+    const t=performance.now()-state.startTime;
+    state.stats.push({q:state.currentQ.q, theme:themePlaySel.value, choice:enemy.text, correctChoice:state.currentQ.choices[state.currentQ.correct], ok:false, ms:t});
+
+    // Rule: 2 consecutive wrong answers shrink shields
+    state.wrongAnswersInRow++;
+    if (state.wrongAnswersInRow >= 2) {
+      shrinkShields();
+      notice('Boucliers réduits !', 'var(--danger)');
+      state.wrongAnswersInRow = 0; // Reset after penalty
+    }
+
+    // Rule: 3 wrong answers in 30 seconds = game over
+    const tnow = performance.now();
+    state.wrongAnswerTimestamps.push(tnow);
+    state.wrongAnswerTimestamps = state.wrongAnswerTimestamps.filter(t => tnow - t < 30000);
+    if(state.wrongAnswerTimestamps.length >= 3) {
+      notice('Trop d\'erreurs en 30s !', 'var(--danger)');
+      endGame();
+    }
   }
   function handleHit(enemy){ if(enemy.correct){ onCorrect(enemy); } else { onWrong(enemy); enemy.alive=false; } }
-  function loseLife(){ state.lives=Math.max(0,state.lives-1); setLivesIcons(); state.streak=0; updateHudStreak(); if(state.lives<=0) endGame(); }
+  function loseLife(){ state.lives=Math.max(0,state.lives-1); setLivesIcons(); if(state.lives<=0) endGame(); }
 
   let last=0;
   function update(dt){
@@ -214,10 +263,10 @@
     state.timeLeft=Math.max(0,state.timeLeft-dt); timeEl.textContent=Math.ceil(state.timeLeft); if(state.timeLeft<=0){ endGame(); return; }
 
     if(state.powerups.double && tnow>state.powerups.untilDouble){ state.powerups.double=false; notice('Tirs doublés terminés'); }
-    if(state.powerups.auto && tnow>state.powerups.untilAuto){ state.powerups.auto=false; notice('Tir auto terminé'); }
+    if(state.powerups.nx && tnow>state.powerups.untilNx){ state.powerups.nx=false; notice('Mitraillette terminée'); }
 
     const p=state.player; if(keys.left) p.x-=p.speed*dt; if(keys.right) p.x+=p.speed*dt; p.x=clamp(p.x,30,canvas.width-30);
-    if(keys.shoot){ shoot(); keys.shoot=false; } if(state.powerups.auto && p.canShoot) shoot();
+    if(keys.shoot){ shoot(); keys.shoot=false; } if(state.powerups.nx && p.canShoot) shoot();
 
     let leftMost=Infinity, rightMost=-Infinity;
     for(const e of state.enemies){ if(!e.alive) continue; leftMost=Math.min(leftMost,e.x); rightMost=Math.max(rightMost,e.x+e.fw); }
@@ -250,12 +299,11 @@
     for(const bonus of state.bonuses) bonus.y+=bonus.vy*dt;
     state.bonuses=state.bonuses.filter(b=>{
       if(b.y>canvas.height+40) return false;
-      if(rectsOverlap({x:b.x-10,y:b.y-10,w:20,h:20}, playerRect())){ applyBonus(b.type); return false; }
+      if(rectsOverlap({x:b.x-12,y:b.y-12,w:24,h:24}, playerRect())){ applyBonus(b.type); return false; }
       return true;
     });
 
     state.anim.invaderTimer+=dt; if(state.anim.invaderTimer>0.35){ state.anim.invaderTimer=0; state.anim.invaderPhase=1-state.anim.invaderPhase; (state.anim.invaderPhase?SFX.stepA():SFX.stepB()); }
-    updateHudStreak();
   }
   function draw(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
@@ -273,18 +321,49 @@
   }
   function loop(ts){ const dt=Math.min(0.035,(ts-last)/1000); last=ts; update(dt); draw(); if(state.running) requestAnimationFrame(loop); }
 
-  function playerRect(){ const p=state.player; const w=44*p.sizeFactor, h=18*p.zFactor; return {x:p.x-w/2,y:p.y-h/2,w:w,h:h}; }
+  function playerRect(){ const p=state.player; const w=44*p.sizeFactor, h=18*p.sizeFactor; return {x:p.x-w/2,y:p.y-h/2,w:w,h:h}; }
   function rectsOverlap(a,b){ return (a.x<b.x+b.w && a.x+a.w>b.x && a.y<b.y+b.h && a.y+a.h>b.y); }
   function roundRect(ctx,x,y,w,h,r,fill){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); if(fill) ctx.fill(); else ctx.stroke(); }
   function drawStars(){ for(let i=0;i<90;i++){ const x=(i*97%canvas.width), y=(i*41 + Math.floor((state.timeLeft*20 + i*13)))%canvas.height; ctx.fillStyle= i%9===0? '#a3c5ff' : (i%5===0? '#7aa4ff' : '#3b54a3'); ctx.fillRect(x,y,2,2); } }
 
-  function spawnBonus(){ const x=60+Math.random()*(canvas.width-120); const type=Math.random()<0.5?'double':'auto'; state.bonuses.push({x:x,y:-20,vy:110+Math.random()*50,type:type}); }
-  function applyBonus(type){ const t=performance.now(); if(type==='double'){ state.powerups.double=true; state.powerups.untilDouble=t+8000; notice('Bonus : tirs doublés'); SFX.bonus(); } if(type==='auto'){ state.powerups.auto=true; state.powerups.untilAuto=t+8000; notice('Bonus : tir continu'); SFX.bonus(); } }
+  function spawnBonus(){
+    const bonusTypes = ['double', 'nx', 'shrink', 'redball'];
+    const type = bonusTypes[Math.floor(Math.random() * bonusTypes.length)];
+    const x=60+Math.random()*(canvas.width-120);
+    state.bonuses.push({x:x,y:-20,vy:110+Math.random()*50,type:type});
+  }
+  function applyBonus(type){
+    const t=performance.now();
+    SFX.bonus();
+    switch(type) {
+      case 'double':
+        state.powerups.double=true; state.powerups.untilDouble=t+8000;
+        notice('Bonus : tirs doublés');
+        break;
+      case 'nx':
+        state.powerups.nx=true; state.powerups.untilNx=t+8000;
+        notice('Bonus : Mitraillette');
+        break;
+      case 'shrink':
+        state.player.sizeFactor = 0.5;
+        notice('Malus : Vaisseau réduit', 'var(--accent3)');
+        break;
+      case 'redball':
+        state.redBallCounter++;
+        shrinkShields();
+        notice('MALUS : Boucliers touchés !', 'var(--danger)');
+        if (state.redBallCounter >= 2) {
+            notice('DESTRUCTION !', 'var(--danger)');
+            endGame();
+        }
+        break;
+    }
+  }
 
   function exportCSV(){
-    const rows=[["Thème joué","Question","Réponse choisie","Bonne réponse","Correct","Temps (s)","Série max","Score final"]];
+    const rows=[["Thème joué","Question","Réponse choisie","Bonne réponse","Correct","Temps (s)","Score final"]];
     const themePlayed=themePlaySel.value;
-    for(const s of state.stats){ rows.push([themePlayed, s.q, s.choice, s.correctChoice, s.ok?'1':'0', (s.ms/1000).toFixed(2), state.bestStreak, state.score]); }
+    for(const s of state.stats){ rows.push([themePlayed, s.q, s.choice, s.correctChoice, s.ok?'1':'0', (s.ms/1000).toFixed(2), state.score]); }
     const csv=rows.map(r=>r.map(v=>`"${String(v).replaceAll('"','\\\"')}"`).join(';')).join('\\n');
     const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'}); const url=URL.createObjectURL(blob);
     const a=document.createElement('a'); a.href=url; a.download='quiz_invaders_btp_resultats.csv'; a.click(); setTimeout(()=>URL.revokeObjectURL(url),5000);
@@ -322,7 +401,7 @@
       applyDifficulty();
     }catch(e){
       console.warn('Échec du chargement des questions (JSON)', e);
-      document.getElementById('start-screen').innerHTML = `<h1>Erreur</h1><p class="rules">Impossible de charger le fichier de questions <code>questions-btp.json</code>.<br/>Vérifiez que le fichier est présent et que vous lancez le jeu depuis un serveur web local.</p>`;
+      document.getElementById('start-screen').innerHTML = `<h1>Erreur</h1><p class="rules">Impossible de charger le fichier de questions s>questions-btp.json</code>.<br/>Vérifiez que le fichier est présent et que vous lancez le jeu depuis un serveur web local.</p>`;
     }
   }
   document.addEventListener('DOMContentLoaded', init);
