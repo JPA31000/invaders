@@ -23,7 +23,7 @@ button{cursor:pointer; font-weight:700; letter-spacing:.5px}
 button.primary{background:linear-gradient(180deg,#66d8ff,#4cc9f0); color:#052236; border-color:transparent}
 button.ghost{background:rgba(255,255,255,.05)}
 main{display:flex; justify-content:center}
-#cabinet{width:min(98vw, 1200px); display:grid; grid-template-columns: minmax(640px, 900px) 340px; gap:14px;}
+#cabinet{width:min(98vw, 1500px); display:grid; grid-template-columns: minmax(640px, 1100px) 340px; gap:14px;}
 @media (max-width:1100px){ #cabinet{ grid-template-columns: 1fr; } }
 #screen{
   position:relative; aspect-ratio:3/2; border-radius:18px;
