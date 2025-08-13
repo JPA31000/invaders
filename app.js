@@ -60,6 +60,7 @@
   const downloadCsvBtn=document.getElementById('downloadCsv'); const fsBtn=document.getElementById('fsBtn');
   const difficultySel=document.getElementById('difficulty'), themePlaySel=document.getElementById('themePlay');
   const replayBtn=document.getElementById('replayBtn');
+  const tryAgainBtn=document.getElementById('tryAgainBtn');
   const W=canvas.width, H=canvas.height;
 
   let state={ running:false, paused:false, over:false,
@@ -127,6 +128,7 @@
     const base=getBankFor(bankKey);
     if(!base.length){ notice('Ce thème ne contient aucune question.', 'var(--danger)'); overlay.hidden=false; return; }
     overlay.hidden=true; state.running=true; state.paused=false; state.over=false;
+    overlayStart.hidden=true; tryAgainBtn.hidden=true; downloadCsvBtn.hidden=true;
     state.score=0; state.lives=3; state.timeLeft=120; state.stats=[]; setLivesIcons();
     state.player.x=W/2; state.bullets=[]; state.enemyBullets=[]; state.enemies=[]; state.qIndex=0; state.shields=[]; state.bonuses=[]; notice('');
     state.totalCorrect=0; state.correctSinceSizeToggle=0; state.aliensBuffed=false; state.shieldSmall=false; state.player.sizeFactor=1;
@@ -140,7 +142,12 @@
   function endGame(){
     state.running=false; state.over=true; overlay.hidden=false; downloadCsvBtn.hidden=false;
     const ok=state.stats.filter(s=>s.ok).length, total=state.stats.length||1, rate=Math.round(100*ok/total);
-    overlay.querySelector('h2').textContent=`Partie terminée — Score : ${state.score} — Réussite : ${rate}% — Record de série : ${state.bestStreak}`;
+    const h2=overlay.querySelector('h2');
+    h2.textContent='Game Over';
+    h2.classList.add('pixel-font');
+    const p=overlay.querySelector('p');
+    if(p){ p.textContent=`Score : ${state.score} — Réussite : ${rate}% — Record de série : ${state.bestStreak}`; }
+    overlayStart.hidden=true; tryAgainBtn.hidden=false;
   }
 
   let QUESTION_BANK=[];
@@ -291,7 +298,7 @@
   }
   applyDifficulty();
 
-  overlayStart.onclick=startGame; startBtn.onclick=startGame; replayBtn.onclick=startGame;
+  overlayStart.onclick=startGame; startBtn.onclick=startGame; replayBtn.onclick=startGame; tryAgainBtn.onclick=startGame;
   pauseBtn.onclick=togglePause; fsBtn.onclick=toggleFullscreen; downloadCsvBtn.onclick=exportCSV;
   difficultySel.onchange=applyDifficulty; themePlaySel.onchange=themeChanged;
 
