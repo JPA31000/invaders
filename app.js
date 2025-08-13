@@ -56,10 +56,9 @@
   const timeEl=document.getElementById('time'), questionTextEl=document.getElementById('questionText');
   const choicesChipsEl=document.getElementById('choicesChips'), noticeEl=document.getElementById('notice');
   const overlay=document.getElementById('overlay'); const overlayStart=document.getElementById('overlayStart');
-  const startBtn=document.getElementById('startBtn'); const pauseBtn=document.getElementById('pauseBtn');
+  const pauseBtn=document.getElementById('pauseBtn');
   const downloadCsvBtn=document.getElementById('downloadCsv'); const fsBtn=document.getElementById('fsBtn');
   const difficultySel=document.getElementById('difficulty'), themePlaySel=document.getElementById('themePlay');
-  const replayBtn=document.getElementById('replayBtn');
   const W=canvas.width, H=canvas.height;
 
   let state={ running:false, paused:false, over:false,
@@ -291,7 +290,7 @@
   }
   applyDifficulty();
 
-  overlayStart.onclick=startGame; startBtn.onclick=startGame; replayBtn.onclick=startGame;
+  overlayStart.onclick=startGame;
   pauseBtn.onclick=togglePause; fsBtn.onclick=toggleFullscreen; downloadCsvBtn.onclick=exportCSV;
   difficultySel.onchange=applyDifficulty; themePlaySel.onchange=themeChanged;
 
