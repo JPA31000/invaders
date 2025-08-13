@@ -51,6 +51,14 @@
   let BANKS=null; let BANK_KEYS=[];
 
   const canvas=document.getElementById('game'), ctx=canvas.getContext('2d');
+  function syncCanvasSize(){
+    canvas.width=canvas.clientWidth;
+    canvas.height=canvas.clientHeight;
+  }
+  window.addEventListener('resize', syncCanvasSize);
+  document.addEventListener('fullscreenchange', syncCanvasSize);
+  document.addEventListener('webkitfullscreenchange', syncCanvasSize);
+  syncCanvasSize();
   const scoreEl=document.getElementById('score'), livesIconsEl=document.getElementById('livesIcons');
   const qIndexEl=document.getElementById('qIndex'), qTotalEl=document.getElementById('qTotal');
   const timeEl=document.getElementById('time'), questionTextEl=document.getElementById('questionText');
@@ -60,13 +68,11 @@
   const downloadCsvBtn=document.getElementById('downloadCsv'); const fsBtn=document.getElementById('fsBtn');
   const difficultySel=document.getElementById('difficulty'), themePlaySel=document.getElementById('themePlay');
   const replayBtn=document.getElementById('replayBtn');
-  const W=canvas.width, H=canvas.height;
-
   let state={ running:false, paused:false, over:false,
     score:0, lives:3, timeLeft:120, startTime:0,
     bullets:[], enemyBullets:[], enemies:[], shields:[], bonuses:[],
     enemyDir:1, enemySpeed:40, enemyFireBase:1.6, enemyFireTimer:0, enemyBulletSpeedBase:160,
-    player:{x:W/2, y:H-60, w:44, h:18, speed:370, cooldown:280, canShoot:true, sizeFactor:1},
+      player:{x:canvas.width/2, y:canvas.height-60, w:44, h:18, speed:370, cooldown:280, canShoot:true, sizeFactor:1},
     questionOrder:[], qIndex:0, currentQ:null,
     stats:[], difficulty:'normal',
     anim:{invaderPhase:0, invaderTimer:0},
@@ -128,7 +134,7 @@
     if(!base.length){ notice('Ce thème ne contient aucune question.', 'var(--danger)'); overlay.hidden=false; return; }
     overlay.hidden=true; state.running=true; state.paused=false; state.over=false;
     state.score=0; state.lives=3; state.timeLeft=120; state.stats=[]; setLivesIcons();
-    state.player.x=W/2; state.bullets=[]; state.enemyBullets=[]; state.enemies=[]; state.qIndex=0; state.shields=[]; state.bonuses=[]; notice('');
+    state.player.x=canvas.width/2; state.player.y=canvas.height-60; state.bullets=[]; state.enemyBullets=[]; state.enemies=[]; state.qIndex=0; state.shields=[]; state.bonuses=[]; notice('');
     state.totalCorrect=0; state.correctSinceSizeToggle=0; state.aliensBuffed=false; state.shieldSmall=false; state.player.sizeFactor=1;
     state.powerups={double:false,auto:false,untilDouble:0,untilAuto:0}; state.nextBonusTimer=7.0;
     state.streak=0; state.bestStreak=0; updateHudStreak();
