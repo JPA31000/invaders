@@ -19,16 +19,16 @@
       const t=audioCtx.currentTime; o.start(t); o.stop(t+(d||0.08)); await new Promise(r=>setTimeout(r,(d||0.08)*1000));
     }
   }
-  const SFX={ start:()=>playSeq([[880,.10],[1175,.10],[1568,.12]]),
-              correct:()=>playSeq([[1320,.06],[1760,.06]]),
-              wrong:()=>playSeq([[220,.10],[165,.08]]),
-              bonus:()=>playSeq([[980,.06],[1245,.06]]),
-              fire:()=>beep(900,.05), enemyFire:()=>beep(180,.05), stepA:()=>beep(300,.03), stepB:()=>beep(260,.03) };
+  const SFX={ start:()=>playSeq([[880,.10],[1175,.10],[1568,.12]], .05*VOL.start),
+              correct:()=>playSeq([[1320,.06],[1760,.06]], .04*VOL.correct),
+              wrong:()=>playSeq([[220,.10],[165,.08]], .055*VOL.wrong),
+              bonus:()=>playSeq([[988,.06],[1245,.06],[1660,.06]], .03*VOL.bonus),
+              fire:()=>beep(900,.05), enemyFire:()=>beep(180,.05), stepA:()=>beep(300,.03), stepB:()=>beep(260,.03) , loseLife:()=>playSeq([[140,.12],[110,.16]]), lifeLost:()=>playSeq([[220,.12],[196,.12],[174,.14],[164,.18]], .08*VOL.lifeLost) };
 
   let BANKS=null; let BANK_KEYS=[];
 
   // --- Element selectors ---
-  const startScreen = document.getElementById('start-screen');
+  const startModal = document.getElementById('startModal');
   const gameContainer = document.getElementById('game-container');
   const newGameBtn = document.getElementById('newGameBtn');
 
@@ -45,7 +45,7 @@
   const tryAgainBtn = document.getElementById('tryAgainBtn');
   const W=canvas.width, H=canvas.height;
 
-  let state={ running:false, paused:false, over:false,
+  let state={ running:false, paused:false, over:false, showPixelGameOver:false, flashUntil:0,
     score:0, lives:3, timeLeft:240, startTime:0, // Game time is now 4 minutes
     bullets:[], enemyBullets:[], enemies:[], shields:[], bonuses:[],
     enemyDir:1, enemySpeed:40, enemyFireBase:1.6, enemyFireTimer:0, enemyBulletSpeedBase:160,
@@ -61,6 +61,74 @@
     wrongAnswerTimestamps: []
   };
 
+
+
+  // Helpers to (re)focus options when the start modal opens
+  function showStartModal(){
+    startModal.hidden = false;
+    const panel = startModal.querySelector('.panel');
+    panel.classList.remove('shake');
+    // Focus theme select for accessibility
+    const sel = document.getElementById('themePlay');
+    setTimeout(()=>{ sel && sel.focus(); }, 50);
+  }
+
+  // --- Pixel text (for GAME OVER) ---
+
+  let gameOverFlickerEnd = 0;
+  function triggerGameOverFlicker(){
+    gameOverFlickerEnd = performance.now() + 2000;
+  }
+
+
+  // Countdown before game start
+  let countdownValue = 0;
+  let countdownTimer = null;
+  function startCountdown(){
+    countdownValue = 3;
+    countdownTimer = setInterval(()=>{
+      countdownValue--;
+      if(countdownValue <= 0){
+        clearInterval(countdownTimer);
+        countdownValue = 0;
+        actuallyStartGame();
+      }
+    }, 1000);
+  }
+
+  const PIX = {
+    '0':["0110","1001","1001","1001","0110"],
+    '1':["0010","0110","0010","0010","0111"],
+    '2':["0110","1001","0010","0100","1111"],
+    '3':["1110","0001","0110","0001","1110"],
+    'A':["0110","1001","1111","1001","1001"],
+    'E':["1111","1000","1110","1000","1111"],
+    'G':["0111","1000","1011","1001","0111"],
+    'M':["10001","11011","10101","10001","10001"],
+    'O':["0110","1001","1001","1001","0110"],
+    'R':["1110","1001","1110","1010","1001"],
+    'V':["10001","10001","01010","01010","00100"],
+    ' ':["0","0","0","0","0"]
+  };
+  function drawPixelText(text,x,y,scale){
+    ctx.save();
+    ctx.translate(x,y);
+    ctx.fillStyle = '#f59e0b';
+    let cursor = 0;
+    for(const ch of text){
+      const grid = PIX[ch] || PIX[' '];
+      const w = (grid[0]||'').length;
+      for(let r=0;r<grid.length;r++){
+        for(let c=0;c<w;c++){
+          if(grid[r][c]==='1'){
+            ctx.fillRect((cursor+c)*scale, r*scale, scale, scale);
+          }
+        }
+      }
+      cursor += w + 1;
+    }
+    ctx.restore();
+  }
   const SPRITES={
     invA:[["0011100","0100010","1000001","1011101","1111111","0100010","1000001"],
           ["0011100","0100010","1000001","1011101","0111110","0100010","0011100"]],
@@ -134,11 +202,18 @@
   function getBankFor(key){ return (BANKS && BANKS[key]) ? BANKS[key] : []; }
 
   function startGame(){
-    startScreen.hidden = true;
+    const themeSelect = document.getElementById('themePlay');
+    if(!themeSelect || !themeSelect.value || themeSelect.value === ''){
+      const panel = startModal.querySelector('.panel');
+      panel.classList.remove('shake'); void panel.offsetWidth; panel.classList.add('shake');
+      return; // do not start without a thème
+    }
+    startModal.hidden = true;
     gameContainer.hidden = false;
-    requestAnimationFrame(() => {
-        window.scrollTo(0, 0);
-    });
+    state.showPixelGameOver = false;
+    state.countdownActive = true;
+    startCountdown();
+    requestAnimationFrame(() => { window.scrollTo(0, 0); });
 
     const bankKey=themePlaySel.value || getDefaultKey();
     const base=getBankFor(bankKey);
@@ -163,13 +238,16 @@
     SFX.start(); requestAnimationFrame(loop);
   }
   function endGame(){
-    state.running=false; state.over=true;
+    state.running=false; state.over=true; state.showPixelGameOver = true; state.flashUntil = performance.now() + 140;
     overlay.hidden=false;
     tryAgainBtn.hidden = false;
     downloadCsvBtn.hidden=false;
     const ok=state.stats.filter(s=>s.ok).length, total=state.stats.length||1, rate=Math.round(100*ok/total);
     overlay.querySelector('h2').textContent=`Game Over`;
     overlay.querySelector('p.small').textContent = `Score final : ${state.score} — Réussite : ${rate}%`;
+    triggerGameOverFlicker();
+    state.flashUntil = performance.now() + 150; // flash for 150ms
+    draw();
   }
 
   let QUESTION_BANK=[];
@@ -254,7 +332,8 @@
     }
   }
   function handleHit(enemy){ if(enemy.correct){ onCorrect(enemy); } else { onWrong(enemy); enemy.alive=false; } }
-  function loseLife(){ state.lives=Math.max(0,state.lives-1); setLivesIcons(); if(state.lives<=0) endGame(); }
+  function loseLife(){ SFX.lifeLost();
+    SFX.loseLife(); state.lives=Math.max(0,state.lives-1); setLivesIcons(); if(state.lives<=0) endGame(); }
 
   let last=0;
   function update(dt){
@@ -317,6 +396,52 @@
     ctx.fillStyle='#e2f1ff'; for(const b of state.bullets) ctx.fillRect(b.x-1.5,b.y,b.w,b.h);
     ctx.fillStyle='#f4c542'; for(const b of state.enemyBullets) ctx.fillRect(b.x-1.5,b.y,b.w,b.h);
     for(const b of state.bonuses) drawBonus(b);
+
+    // Brief white flash on GAME OVER
+    if(state.flashUntil && performance.now() < state.flashUntil){
+      const remain = state.flashUntil - performance.now(); // ~0..140ms
+      const alpha = Math.max(0, Math.min(1, remain/140));
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0,0,canvas.width,canvas.height);
+      ctx.restore();
+    }
+
+
+    if(state.inCountdown && (state.countdown||0) > 0){
+      const text = String(state.countdown);
+      const scale = 26;
+      let w=0; const grid = PIX[text]; if(grid){ w=((grid[0]||'').length+1); }
+      const textWidth = w*scale; const textHeight=5*scale;
+      const x=(canvas.width-textWidth)/2, y=(canvas.height-textHeight)/2;
+      drawPixelText(text, x, y, scale);
+    }
+
+    if(state.showPixelGameOver){
+      const text = 'GAME OVER';
+      const scale = 10;
+      const textWidth = (function(){
+        // compute approximate width using PIX mapping
+        let w=0; for(const ch of text){ const grid = PIX[ch]||PIX[' ']; w += (grid[0]||'').length + 1; } return w*scale; })();
+      const textHeight = 5*scale;
+      const x = (canvas.width - textWidth)/2; const y = (canvas.height - textHeight)/2;
+      const now = performance.now();
+      if(now < gameOverFlickerEnd){
+        if(Math.floor(now/300)%2===0){ drawPixelText(text, x, y, scale); }
+      } else {
+        drawPixelText(text, x, y, scale);
+      }
+    }
+
+    if(!state._hudInit){ document.querySelectorAll('#hud .chip').forEach(c=>c.classList.add('appear')); state._hudInit=true; }
+    if(state.flashUntil && performance.now() < state.flashUntil){
+      ctx.save();
+      ctx.fillStyle = 'rgba(255,255,255,0.7)';
+      ctx.fillRect(0,0,canvas.width,canvas.height);
+      ctx.restore();
+    }
+
     scoreEl.textContent=state.score;
   }
   function loop(ts){ const dt=Math.min(0.035,(ts-last)/1000); last=ts; update(dt); draw(); if(state.running) requestAnimationFrame(loop); }
@@ -378,7 +503,7 @@
   
   // --- Event Listeners ---
   newGameBtn.onclick = startGame;
-  tryAgainBtn.onclick = startGame;
+  tryAgainBtn.onclick = () => { overlay.hidden = true; showStartModal(); };
   pauseBtn.onclick=togglePause;
   downloadCsvBtn.onclick=exportCSV;
   difficultySel.onchange=applyDifficulty;
@@ -401,7 +526,9 @@
       applyDifficulty();
     }catch(e){
       console.warn('Échec du chargement des questions (JSON)', e);
-      document.getElementById('start-screen').innerHTML = `<h1>Erreur</h1><p class="rules">Impossible de charger le fichier de questions s>questions-btp.json</code>.<br/>Vérifiez que le fichier est présent et que vous lancez le jeu depuis un serveur web local.</p>`;
+      overlay.hidden = false;
+      overlay.querySelector('h2').textContent = 'Erreur';
+      overlay.querySelector('p.small').textContent = 'Impossible de charger le fichier de questions (questions-btp.json).';
     }
   }
   document.addEventListener('DOMContentLoaded', init);

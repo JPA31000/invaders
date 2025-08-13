@@ -8,42 +8,13 @@
 </head>
 <body>
 
-  <div id="start-screen">
-    <h1>QUIZ INVADERS • BTP</h1>
-    <p class="rules">
-      <b>Règles du jeu :</b> Visez et détruisez l'envahisseur qui correspond à la bonne réponse (A, B ou C). Chaque bonne réponse vous fait passer à la question suivante. En mode difficile, les erreurs vous coûtent une vie.
-      <br/><br/>
-      <b>Raccourcis clavier :</b>
-      <br/>Déplacement : <b>◀︎ Gauche</b> / <b>▶︎ Droite</b>
-      <br/>Tir : <b>Barre d'Espace</b>
-      <br/>Pause : <b>P</b>
-    </p>
-
-    <div class="start-options">
-      <div class="option-group">
-        <label for="themePlay">Thème :</label>
-        <select id="themePlay" aria-label="Choisir le thème de jeu">
-          <option value="" disabled selected>Chargement…</option>
-        </select>
-      </div>
-      <div class="option-group">
-        <label for="difficulty">Difficulté :</label>
-        <select id="difficulty" aria-label="Choisir la difficulté">
-          <option value="easy">Facile</option>
-          <option value="normal" selected>Normal</option>
-          <option value="hard">Difficile</option>
-        </select>
-      </div>
-    </div>
-
-    <button id="newGameBtn" class="pixel-button">New Game</button>
-  </div>
-
-  <div id="game-container" hidden>
+  <div id="game-container">
     <header class="marquee">
       <div class="glow"></div>
       <h1>QUIZ INVADERS • BTP — QCM</h1>
       <div class="controls">
+        
+        <label class="volume">Vol <input id="volume" type="range" min="0" max="100" value="100" step="1" /><output id="volumeVal" for="volume">100%</output><span class="volume-icon" title="Niveau sonore"><svg id="volumeIcon" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">  <!-- haut-parleur -->  <path class="spk" d="M3 9h4l5-4v14l-5-4H3z" />  <!-- ondes -->  <path class="wave w1" d="M14 12a3 3 0 0 0 1.5 2.6" />  <path class="wave w2" d="M14 12a5 5 0 0 0 2.6 4.33" />  <path class="wave w3" d="M14 12a7 7 0 0 0 3.7 6.0" /></svg></span></label>
         <label class="sound"><input id="sound" type="checkbox" /> Son</label>
         <button id="pauseBtn" class="ghost" title="P">Pause</button>
       </div>
@@ -67,6 +38,38 @@
             <div id="notice"></div>
           </div>
 
+          <!-- Start Modal (small overlay over the game) -->
+          <div id="startModal" class="modal">
+            <div class="panel small">
+              <h2>Règles du jeu</h2>
+              <p class="rules">
+                <b>But :</b> Détruisez l'envahisseur qui correspond à la bonne réponse (A, B ou C).
+                <br/>Chaque bonne réponse vous fait passer à la question suivante.
+                <br/><br/><b>Raccourcis :</b> ◀︎/▶︎ pour se déplacer, barre d'espace pour tirer, P pour pause.
+              </p>
+
+              <div class="start-options">
+                <div class="option-group">
+                  <label for="themePlay">Thème :</label>
+                  <select id="themePlay" aria-label="Choisir le thème de jeu">
+                    <option value="" disabled selected>Chargement…</option>
+                  </select>
+                </div>
+                <div class="option-group">
+                  <label for="difficulty">Difficulté :</label>
+                  <select id="difficulty" aria-label="Choisir la difficulté">
+                    <option value="easy">Facile</option>
+                    <option value="normal" selected>Normal</option>
+                    <option value="hard">Difficile</option>
+                  </select>
+                </div>
+              </div>
+
+              <button id="newGameBtn" class="pixel-button">New Game</button>
+            </div>
+          </div>
+
+          <!-- End overlay -->
           <div id="overlay">
             <div class="panel">
               <h2>Game Over</h2>
@@ -81,7 +84,7 @@
 
         <aside id="sidebar">
           <div id="qa">
-            <div id="questionText">Chargement des questions…</div>
+            <div id="questionText">Choisissez un thème et lancez une partie.</div>
             <div id="choicesChips"></div>
             <p class="hint">Visez la lettre sous l’invader (A/B/C).</p>
           </div>

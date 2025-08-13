@@ -139,3 +139,156 @@ footer .tip{ margin:12px 0 22px; }
   transform: translate(6px, 6px);
   box-shadow: none;
 }
+
+/* --- Start Modal overlaying the game --- */
+.modal{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background: rgba(0,0,0,.45);
+  z-index: 5;
+}
+.modal[hidden]{ display:none; }
+
+.panel.small{
+  max-width: 520px;
+  width: calc(100% - 40px);
+  margin: 0 auto;
+}
+.panel{
+  background: linear-gradient(180deg, rgba(10,20,48,.95), rgba(8,12,30,.95));
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 16px;
+  padding: 18px 20px;
+  box-shadow: 0 14px 50px rgba(0,0,0,.6);
+  text-align: center;
+}
+
+#startModal .rules{
+  color: var(--muted);
+  line-height: 1.6;
+  font-size: 1rem;
+  margin: 8px 0 14px;
+  background: rgba(10, 15, 43, 0.5);
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,.12);
+}
+
+/* Ensure overlay appears above HUD */
+#overlay{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background: rgba(0,0,0,.35);
+  z-index: 6;
+}
+#overlay[hidden]{ display:none; }
+
+/* Pixel 'GAME OVER' drawn on canvas; keep overlay minimal text/buttons */
+
+
+/* --- Refinements for start modal --- */
+.modal{
+  animation: fadeIn 0.4s ease-out;
+  backdrop-filter: blur(3px);
+}
+.panel.small{
+  transform: scale(0.95);
+  animation: popIn 0.35s ease-out forwards;
+}
+@keyframes fadeIn{
+  from{ opacity:0; }
+  to{ opacity:1; }
+}
+@keyframes popIn{
+  from{ transform: scale(0.8); opacity: 0; }
+  to{ transform: scale(1); opacity: 1; }
+}
+
+/* Button hover styles */
+.pixel-button, .primary, .ghost{
+  transition: transform 0.15s ease, background-color 0.2s ease;
+}
+.pixel-button:hover, .primary:hover, .ghost:hover{
+  transform: scale(1.05);
+}
+
+/* Game Over pixel text glow */
+canvas{
+  image-rendering: pixelated;
+}
+
+/* ===== Refinements ===== */
+.modal{
+  background: rgba(0,0,20,.45);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+}
+.modal:not([hidden]) .panel{ animation: pop-in .22s ease-out both; }
+#overlay:not([hidden]){ animation: fade-in .18s ease-out both; }
+
+.panel.small{ max-width: 420px; padding: 16px 18px; }
+
+.pixel-button,
+button.primary{
+  transition: transform .06s ease, opacity .2s ease;
+}
+.pixel-button:active,
+button.primary:active{ transform: translateY(1px) scale(.99); }
+
+/* Subtle entrance for chips text */
+#hud .chip{ transition: opacity .2s ease; }
+#hud .chip.appear{ opacity: 0; animation: fade-in .25s .1s ease-out both; }
+
+/* Shake feedback when starting without choix */
+@keyframes shake {
+  0%,100%{ transform: translateX(0); }
+  20%{ transform: translateX(-6px); }
+  40%{ transform: translateX(6px); }
+  60%{ transform: translateX(-4px); }
+  80%{ transform: translateX(4px); }
+}
+.panel.shake{ animation: shake .25s linear; }
+
+@keyframes fade-in {
+  from { opacity: 0; } to { opacity: 1; }
+}
+@keyframes pop-in {
+  0% { opacity: 0; transform: translateY(6px) scale(.98); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Mobile tweaks */
+@media (max-width: 640px){
+  #screen{ transform: scale(.9); transform-origin: top center; }
+  .panel.small{ max-width: 360px; font-size: .95rem; }
+  #startModal .rules{ font-size: .95rem; }
+}
+
+/* Volume slider compact */
+.controls .volume{
+  display:inline-flex; align-items:center; gap:8px;
+  margin-left:10px; font-weight:600; color:var(--muted);
+}
+#volume{ width:120px; vertical-align:middle; }
+#volumeVal{ display:inline-block; min-width:44px; text-align:right; color:var(--muted-2); font-variant-numeric: tabular-nums; }
+@media (max-width: 720px){
+  #volume{ width:90px; }
+  #volumeVal{ min-width:40px; }
+}
+
+/* Speaker icon levels */
+.volume-icon{ display:inline-flex; align-items:center; }
+.volume-icon svg{ stroke: currentColor; fill: none; stroke-width: 2; }
+.volume-icon .spk{ fill: currentColor; stroke: none; opacity:.9; }
+.volume-icon .wave{ opacity: 0; transition: opacity .15s ease; }
+#volumeIcon.level-0 .wave{ opacity: 0; }
+#volumeIcon.level-1 .w1{ opacity: 1; }
+#volumeIcon.level-2 .w1, #volumeIcon.level-2 .w2{ opacity: 1; }
+#volumeIcon.level-3 .w1, #volumeIcon.level-3 .w2, #volumeIcon.level-3 .w3{ opacity: 1; }
+#volumeIcon.muted{ opacity: .45; filter: grayscale(100%); }
