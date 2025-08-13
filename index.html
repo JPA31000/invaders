@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Quiz Invaders BTP — Arcade (QCM)</title>
   <link rel="stylesheet" href="styles.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
 </head>
 <body>
   <header class="marquee">
@@ -26,18 +25,15 @@
 
       <label class="sound"><input id="sound" type="checkbox" /> Son</label>
 
-      <button id="startBtn" class="primary">Démarrer ⏎</button>
       <button id="pauseBtn" class="ghost" title="P">Pause</button>
-      <button id="fsBtn" class="ghost" title="F">Plein écran (F)</button>
     </div>
   </header>
 
   <main>
     <div id="cabinet">
       <div id="screen">
-        <canvas id="game" width="900" height="600" aria-label="Surface de jeu"></canvas>
+        <canvas id="game" width="1100" height="733" aria-label="Surface de jeu"></canvas>
         <div id="scan"></div>
-        <div id="fsTicker" aria-hidden="true"></div>
 
         <div id="hud" aria-live="polite">
           <div class="row">
@@ -54,12 +50,11 @@
         <div id="overlay">
           <div class="panel">
             <h2>Space‑Invader pédagogique (BTP)</h2>
-            <p class="small">Dépl.: ◀︎ ▶︎ — Tir : <b>Espace</b> — Pause : <b>P</b> — Démarrer : <b>Entrée</b>.<br/>
+            <p class="small">Dépl.: ◀︎ ▶︎ — Tir : <b>Espace</b> — Pause : <b>P</b>.<br/>
                Visez l’envahisseur correspondant à la <b>bonne réponse</b> (A/B/C listées à droite). En « Difficile », 
                les erreurs retirent une vie et les ennemis bombardent davantage.</p>
-            <div class="row" style="gap:10px">
-              <button class="primary" id="overlayStart">Lancer la partie</button>
-              <button class="pixel-btn" id="tryAgainBtn" hidden>Try again</button>
+            <div class="row" style="gap:10px; justify-content: center;">
+              <button class="primary" id="tryAgainBtn" hidden>Try again ?</button>
               <button class="ghost" id="downloadCsv" hidden>Télécharger les résultats (.csv)</button>
             </div>
           </div>
@@ -70,7 +65,6 @@
         <div id="qa">
           <div id="questionText">Chargement des questions…</div>
           <div id="choicesChips"></div>
-          <button id="replayBtn" class="ghost" style="margin-top:8px">Rejouer</button>
           <p class="hint">Visez la lettre sous l’invader (A/B/C).</p>
         </div>
       </aside>
@@ -79,6 +73,7 @@
 
   <footer>
     <p class="tip"><b>Astuce</b> : restez précis — les séries augmentent le multiplicateur (3→×1.2, 5→×1.5, 8→×2).</p>
+    <button id="newGameBtn" class="pixel-button">New Game</button>
   </footer>
 
   <script src="app.js" defer></script>

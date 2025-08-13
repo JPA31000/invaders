@@ -1,4 +1,3 @@
-
 (()=>{
   const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
   let audioCtx=null; const soundOn=()=>document.getElementById('sound').checked;
@@ -25,28 +24,6 @@
               wrong:()=>playSeq([[220,.10],[165,.08]]),
               bonus:()=>playSeq([[980,.06],[1245,.06]]),
               fire:()=>beep(900,.05), enemyFire:()=>beep(180,.05), stepA:()=>beep(300,.03), stepB:()=>beep(260,.03) };
-  // === Fullscreen helpers (namespaced) ===
-  function fs2Element(){ return (document.fullscreenElement || document.webkitFullscreenElement || null); }
-  function fs2IsActive(){ return !!fs2Element(); }
-  function fs2UpdateClass(){
-    const scr=document.getElementById('screen');
-    if(!scr) return;
-    if(fs2IsActive()){ scr.classList.add('fs-active'); } else { scr.classList.remove('fs-active'); }
-  }
-  function fs2UpdateTicker(){
-    const el=document.getElementById('fsTicker'); if(!el) return;
-    if(!fs2IsActive()){ el.textContent=''; return; }
-    let theme = document.getElementById('themePlay')?.value || '';
-    let q = (typeof state!=='undefined')? state.currentQ : null;
-    if(q){
-      const labels = 'ABC';
-      const parts = q.choices.map((c,i)=> `${labels[i]}) ${String(c).replace(/\s+/g,' ').trim()}`);
-      el.textContent = `[${theme}] ${String(q.q).replace(/\s+/g,' ').trim()} | ` + parts.join(' | ');
-    }else{
-      el.textContent = `[${theme}] Prêt — appuyez sur Démarrer`;
-    }
-  }
-
 
   let BANKS=null; let BANK_KEYS=[];
 
@@ -55,12 +32,12 @@
   const qIndexEl=document.getElementById('qIndex'), qTotalEl=document.getElementById('qTotal');
   const timeEl=document.getElementById('time'), questionTextEl=document.getElementById('questionText');
   const choicesChipsEl=document.getElementById('choicesChips'), noticeEl=document.getElementById('notice');
-  const overlay=document.getElementById('overlay'); const overlayStart=document.getElementById('overlayStart');
-  const startBtn=document.getElementById('startBtn'); const pauseBtn=document.getElementById('pauseBtn');
-  const downloadCsvBtn=document.getElementById('downloadCsv'); const fsBtn=document.getElementById('fsBtn');
+  const overlay=document.getElementById('overlay');
+  const pauseBtn=document.getElementById('pauseBtn');
+  const downloadCsvBtn=document.getElementById('downloadCsv');
   const difficultySel=document.getElementById('difficulty'), themePlaySel=document.getElementById('themePlay');
-  const replayBtn=document.getElementById('replayBtn');
-  const tryAgainBtn=document.getElementById('tryAgainBtn');
+  const newGameBtn = document.getElementById('newGameBtn');
+  const tryAgainBtn = document.getElementById('tryAgainBtn');
   const W=canvas.width, H=canvas.height;
 
   let state={ running:false, paused:false, over:false,
@@ -101,34 +78,33 @@
     if(e.key==='ArrowLeft') keys.left=true;
     if(e.key==='ArrowRight') keys.right=true;
     if(e.key===' '){ keys.shoot=true; e.preventDefault(); }
-    if(e.key==='Enter'){ if(!state.running) startGame(); }
     if(e.key.toLowerCase()==='p'){ togglePause(); }
-    if(e.key.toLowerCase()==='f'){ toggleFullscreen(); }
   });
   document.addEventListener('keyup',e=>{ if(e.key==='ArrowLeft') keys.left=false; if(e.key==='ArrowRight') keys.right=false; if(e.key===' ') keys.shoot=false; });
-
-  function isFs(){ return !!(document.fullscreenElement || document.webkitFullscreenElement); }
-  async function toggleFullscreen(){ try{ const el=document.getElementById('screen')||document.documentElement; if(!fs2IsActive()){ await (el.requestFullscreen?el.requestFullscreen():el.webkitRequestFullscreen()); } else { await (document.exitFullscreen?document.exitFullscreen():document.webkitExitFullscreen()); } fs2UpdateClass(); fs2UpdateTicker(); }catch(e){ console.warn('FS error',e); } }
 
   function setLivesIcons(){ livesIconsEl.textContent='🛸'.repeat(state.lives); }
   function togglePause(){ if(!state.running) return; state.paused=!state.paused; notice(state.paused?'PAUSE':''); }
   function notice(txt,color){ noticeEl.textContent=txt||''; noticeEl.style.color=color||'#fff'; if(txt){ setTimeout(()=>{ if(noticeEl.textContent===txt) noticeEl.textContent=''; }, 900);}}
 
-  function themeChanged(){ fs2UpdateTicker(); updateFsTicker();
+  function themeChanged(){
     const base=getBankFor(themePlaySel.value); qTotalEl.textContent=base.length;
-    if(state.running){ notice('Thème changé — cliquez Rejouer pour l’appliquer'); }
-    else{ questionTextEl.textContent=`Thème sélectionné : ${themePlaySel.value} — Appuyez sur Démarrer`; fs2UpdateClass(); fs2UpdateTicker(); updateFsTicker(); }
+    if(state.running){ notice('Thème changé — une nouvelle partie appliquera le changement'); }
+    else{ questionTextEl.textContent=`Thème sélectionné : ${themePlaySel.value}`; }
   }
 
   function getDefaultKey(){ return (themePlaySel.options.length>0? themePlaySel.options[0].value : (BANK_KEYS[0]||'')); }
   function getBankFor(key){ return (BANKS && BANKS[key]) ? BANKS[key] : []; }
 
-  function startGame(){ fs2UpdateClass(); fs2UpdateTicker(); updateFsTicker();
+  function startGame(){
     const bankKey=themePlaySel.value || getDefaultKey();
     const base=getBankFor(bankKey);
     if(!base.length){ notice('Ce thème ne contient aucune question.', 'var(--danger)'); overlay.hidden=false; return; }
-    overlay.hidden=true; state.running=true; state.paused=false; state.over=false;
-    overlayStart.hidden=true; tryAgainBtn.hidden=true; downloadCsvBtn.hidden=true;
+
+    newGameBtn.hidden = true;
+    tryAgainBtn.hidden = true;
+    downloadCsvBtn.hidden = true;
+    overlay.hidden=true;
+    state.running=true; state.paused=false; state.over=false;
     state.score=0; state.lives=3; state.timeLeft=120; state.stats=[]; setLivesIcons();
     state.player.x=W/2; state.bullets=[]; state.enemyBullets=[]; state.enemies=[]; state.qIndex=0; state.shields=[]; state.bonuses=[]; notice('');
     state.totalCorrect=0; state.correctSinceSizeToggle=0; state.aliensBuffed=false; state.shieldSmall=false; state.player.sizeFactor=1;
@@ -136,18 +112,17 @@
     state.streak=0; state.bestStreak=0; updateHudStreak();
     state.questionOrder=[...Array(base.length).keys()].sort(()=>Math.random()-0.5);
     QUESTION_BANK=JSON.parse(JSON.stringify(base)); qTotalEl.textContent=QUESTION_BANK.length;
-    nextQuestion(); updateFsTicker(); setupShields(); state.startTime=performance.now(); last=performance.now();
+    nextQuestion(); setupShields(); state.startTime=performance.now(); last=performance.now();
     SFX.start(); requestAnimationFrame(loop);
   }
   function endGame(){
-    state.running=false; state.over=true; overlay.hidden=false; downloadCsvBtn.hidden=false;
+    state.running=false; state.over=true;
+    overlay.hidden=false;
+    tryAgainBtn.hidden = false;
+    downloadCsvBtn.hidden=false;
     const ok=state.stats.filter(s=>s.ok).length, total=state.stats.length||1, rate=Math.round(100*ok/total);
-    const h2=overlay.querySelector('h2');
-    h2.textContent='Game Over';
-    h2.classList.add('pixel-font');
-    const p=overlay.querySelector('p');
-    if(p){ p.textContent=`Score : ${state.score} — Réussite : ${rate}% — Record de série : ${state.bestStreak}`; }
-    overlayStart.hidden=true; tryAgainBtn.hidden=false;
+    overlay.querySelector('h2').textContent=`Game Over`;
+    overlay.querySelector('p.small').textContent = `Score final : ${state.score} — Réussite : ${rate}% — Meilleure série : ${state.bestStreak}`;
   }
 
   let QUESTION_BANK=[];
@@ -197,7 +172,7 @@
     if(state.totalCorrect>=3 && !state.aliensBuffed){ state.aliensBuffed=true; state.enemyFireBase=Math.max(0.6,state.enemyFireBase-0.5); state.enemyBulletSpeedBase+=80; notice('⚠️ Cadence ennemie ↑','var(--accent3)'); }
     if(state.correctSinceSizeToggle>=2){ state.correctSinceSizeToggle=0; state.player.sizeFactor=(state.player.sizeFactor===1?2:1); notice(state.player.sizeFactor===2?'⬆ Taille x2':'⬇ Taille normale'); }
     if(state.totalCorrect>=4 && !state.shieldSmall){ state.shieldSmall=true; shrinkShields(); notice('Boucliers réduits'); }
-    state.qIndex++; nextQuestion(); fs2UpdateTicker(); updateFsTicker();
+    state.qIndex++; nextQuestion();
   }
   function onWrong(enemy){
     state.score=(state.score>120)?(state.score-120):0; state.streak=0; updateHudStreak();
@@ -221,13 +196,13 @@
 
     let leftMost=Infinity, rightMost=-Infinity;
     for(const e of state.enemies){ if(!e.alive) continue; leftMost=Math.min(leftMost,e.x); rightMost=Math.max(rightMost,e.x+e.fw); }
-    if(leftMost===Infinity){ state.qIndex++; nextQuestion(); fs2UpdateTicker(); updateFsTicker(); }
+    if(leftMost===Infinity){ state.qIndex++; nextQuestion(); }
     else{
       const hitL=leftMost<=20 && state.enemyDir<0, hitR=rightMost>=canvas.width-20 && state.enemyDir>0;
       if(hitL||hitR){ state.enemyDir*=-1; for(const e of state.enemies){ e.y+=28; } }
       for(const e of state.enemies){ if(!e.alive) continue; e.x+=state.enemyDir*state.enemySpeed*dt; }
       const reachedBottom=state.enemies.some(e=>e.alive && (e.y+e.fh)>= (canvas.height-120));
-      if(reachedBottom){ loseLife(); state.qIndex++; nextQuestion(); fs2UpdateTicker(); updateFsTicker(); if(state.lives<=0){ endGame(); return; } }
+      if(reachedBottom){ loseLife(); state.qIndex++; nextQuestion(); if(state.lives<=0){ endGame(); return; } }
     }
 
     state.enemyFireTimer+=dt; const interval=state.enemyFireBase+Math.random()*0.6; if(state.enemyFireTimer>interval){ state.enemyFireTimer=0; enemyShoot(); }
@@ -269,7 +244,7 @@
     ctx.fillStyle='#e2f1ff'; for(const b of state.bullets) ctx.fillRect(b.x-1.5,b.y,b.w,b.h);
     ctx.fillStyle='#f4c542'; for(const b of state.enemyBullets) ctx.fillRect(b.x-1.5,b.y,b.w,b.h);
     for(const b of state.bonuses) drawBonus(b);
-    scoreEl.textContent=state.score; fs2UpdateTicker();
+    scoreEl.textContent=state.score;
   }
   function loop(ts){ const dt=Math.min(0.035,(ts-last)/1000); last=ts; update(dt); draw(); if(state.running) requestAnimationFrame(loop); }
 
@@ -298,9 +273,12 @@
   }
   applyDifficulty();
 
-  overlayStart.onclick=startGame; startBtn.onclick=startGame; replayBtn.onclick=startGame; tryAgainBtn.onclick=startGame;
-  pauseBtn.onclick=togglePause; fsBtn.onclick=toggleFullscreen; downloadCsvBtn.onclick=exportCSV;
-  difficultySel.onchange=applyDifficulty; themePlaySel.onchange=themeChanged;
+  newGameBtn.onclick = startGame;
+  tryAgainBtn.onclick = startGame;
+  pauseBtn.onclick=togglePause;
+  downloadCsvBtn.onclick=exportCSV;
+  difficultySel.onchange=applyDifficulty;
+  themePlaySel.onchange=themeChanged;
 
   async function init(){
     try{
@@ -317,7 +295,7 @@
       const p=new URLSearchParams(location.search); const t=(p.get('theme')||'').trim();
       if(t && BANK_KEYS.includes(t)){ themePlaySel.value=t; } else { themePlaySel.selectedIndex=0; }
       const base=getBankFor(themePlaySel.value); qTotalEl.textContent=base.length;
-      questionTextEl.textContent=`Thème sélectionné : ${themePlaySel.value} — Appuyez sur Démarrer`; fs2UpdateClass(); fs2UpdateTicker(); updateFsTicker();
+      questionTextEl.textContent=`Thème sélectionné : ${themePlaySel.value}`;
     }catch(e){
       console.warn('Échec JSON', e);
       alert('Impossible de charger "questions-btp.json". Ouvrez via un serveur local (ex: python -m http.server) ou hébergez les fichiers.');
@@ -326,27 +304,3 @@
   }
   document.addEventListener('DOMContentLoaded', init);
 })();
-
-  function fsElement(){ return (document.fullscreenElement || document.webkitFullscreenElement || null); }
-  function isFs(){ return !!fsElement(); }
-  function updateFsClass(){
-    const screen=document.getElementById('screen');
-    if(isFs()){ screen.classList.add('fs-active'); }
-    else{ screen.classList.remove('fs-active'); }
-  }
-  function updateFsTicker(){
-    const el=document.getElementById('fsTicker'); if(!el) return;
-    if(!isFs()){ el.textContent=''; return; }
-    let theme = document.getElementById('themePlay')?.value || '';
-    let q = state?.currentQ;
-    if(q){
-      const labels = 'ABC';
-      const parts = q.choices.map((c,i)=> `${labels[i]}) ${String(c).replace(/\s+/g,' ').trim()}`);
-      el.textContent = `[${theme}] ${String(q.q).replace(/\s+/g,' ').trim()} | ` + parts.join(' | ');
-    }else{
-      el.textContent = `[${theme}] Prêt — appuyez sur Démarrer`;
-    }
-  }
-
-  document.addEventListener('fullscreenchange', ()=>{ updateFsClass(); updateFsTicker(); });
-  document.addEventListener('webkitfullscreenchange', ()=>{ updateFsClass(); updateFsTicker(); });
