@@ -53,21 +53,3 @@ footer .tip{ text-align:center; margin:12px 0 22px; }
 .hidden{display:none}
 
 
-/* Bandeau QCM (plein écran seulement) */
-#screen.fs-active #fsTicker{
-  position:absolute; left:0; right:0; bottom:0;
-  background: linear-gradient(180deg, rgba(5,10,30,.75), rgba(5,10,30,.92));
-  border-top:1px solid rgba(76,201,240,.25);
-  padding:6px 10px; font-size:12px; line-height:1; white-space:nowrap;
-  overflow:hidden; text-overflow:ellipsis; color:#eaf4ff;
-  text-shadow:0 1px 0 rgba(0,0,0,.55);
-}
-#fsTicker{ display:none; }
-#screen.fs-active #fsTicker{ display:block; }
-
-
-/* FS-TICKER FIX */
-#screen.fs-active #fsTicker{
-  z-index: 50;
-  pointer-events: none;
-}
