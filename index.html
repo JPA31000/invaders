@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Quiz Invaders BTP — Arcade (QCM)</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="marquee">
+    <div class="glow"></div>
+    <h1>QUIZ INVADERS • BTP — QCM</h1>
+    <div class="controls">
+      <label for="themePlay">Thème</label>
+      <select id="themePlay" aria-label="Choisir le thème de jeu">
+        <option value="" disabled selected>Chargement…</option>
+      </select>
+
+      <label for="difficulty">Difficulté</label>
+      <select id="difficulty" aria-label="Choisir la difficulté">
+        <option value="easy">Facile</option>
+        <option value="normal" selected>Normal</option>
+        <option value="hard">Difficile</option>
+      </select>
+
+      <label class="sound"><input id="sound" type="checkbox" /> Son</label>
+
+      <button id="startBtn" class="primary">Démarrer ⏎</button>
+      <button id="pauseBtn" class="ghost" title="P">Pause</button>
+      <button id="fsBtn" class="ghost" title="F">Plein écran (F)</button>
+    </div>
+  </header>
+
+  <main>
+    <div id="cabinet">
+      <div id="screen">
+        <canvas id="game" width="900" height="600" aria-label="Surface de jeu"></canvas>
+        <div id="scan"></div>
+        <div id="fsTicker" aria-hidden="true"></div>
+
+        <div id="hud" aria-live="polite">
+          <div class="row">
+            <div class="chip">SCORE <b id="score">0</b></div>
+            <div class="chip">VIES <span id="livesIcons">🛸🛸🛸</span></div>
+            <div class="chip">QUESTION <b id="qIndex">0</b>/<span id="qTotal">0</span></div>
+            <div class="chip">SÉRIE <b id="streak">0</b> (<span id="bestStreak">0</span>)</div>
+            <div class="chip">MULT <b id="mult">×1.0</b></div>
+            <div class="chip">TEMPS <b id="time">120</b>s</div>
+          </div>
+          <div id="notice"></div>
+        </div>
+
+        <div id="overlay">
+          <div class="panel">
+            <h2>Space‑Invader pédagogique (BTP)</h2>
+            <p class="small">Dépl.: ◀︎ ▶︎ — Tir : <b>Espace</b> — Pause : <b>P</b> — Démarrer : <b>Entrée</b>.<br/>
+               Visez l’envahisseur correspondant à la <b>bonne réponse</b> (A/B/C listées à droite). En « Difficile », 
+               les erreurs retirent une vie et les ennemis bombardent davantage.</p>
+            <div class="row" style="gap:10px">
+              <button class="primary" id="overlayStart">Lancer la partie</button>
+              <button class="ghost" id="downloadCsv" hidden>Télécharger les résultats (.csv)</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <aside id="sidebar">
+        <div id="qa">
+          <div id="questionText">Chargement des questions…</div>
+          <div id="choicesChips"></div>
+          <button id="replayBtn" class="ghost" style="margin-top:8px">Rejouer</button>
+          <p class="hint">Visez la lettre sous l’invader (A/B/C).</p>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <footer>
+    <p class="tip"><b>Astuce</b> : restez précis — les séries augmentent le multiplicateur (3→×1.2, 5→×1.5, 8→×2).</p>
+  </footer>
+
+  <script src="app.js" defer></script>
+</body>
+</html>

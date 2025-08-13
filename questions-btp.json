@@ -1,0 +1,246 @@
+{
+  "Securité incendie": [
+    {
+      "q": "Le « triangle du feu » correspond à :",
+      "choices": ["Combustible + Comburant + Source de chaleur", "Eau + Air + Électricité", "Bois + Métal + Béton"],
+      "correct": 0,
+      "theme": "Chantier"
+    },
+    {
+      "q": "Les « voies engins » servent principalement à :",
+      "choices": ["Permettre l’accès des véhicules de secours à la façade", "Stationner le public", "Acheminer les matériaux par grue"],
+      "correct": 0,
+      "theme": "Chantier"
+    },
+    {
+      "q": "La sécurité incendie vise deux objectifs majeurs :",
+      "choices": ["Évacuer les personnes et faciliter l’intervention des secours", "Sauvegarder exclusivement le bâtiment", "Éteindre tout départ de feu sans alarme"],
+      "correct": 0,
+      "theme": "Sécurité incendie"
+    },
+    {
+      "q": "La « protection passive » en sécurité incendie désigne :",
+      "choices": ["Des dispositifs intégrés limitant les effets du feu sans action humaine", "Les extincteurs et RIA", "Le déclenchement d’une alarme sonore"],
+      "correct": 0,
+      "theme": "Sécurité incendie"
+    },
+    {
+      "q": "Que signifient les lettres R, E et I dans le classement de résistance au feu ?",
+      "choices": ["R : stabilité, E : étanchéité, I : isolation thermique", "R : réaction, E : émission, I : inertie", "R : résistance, E : énergie, I : inflammabilité"],
+      "correct": 0,
+      "theme": "Sécurité incendie"
+    },
+    {
+      "q": "Quelle affirmation est correcte concernant les distances maximales d’évacuation ?",
+      "choices": ["50 m au rez-de-chaussée avec choix d’itinéraire ; 30 m sinon", "30 m au rez-de-chaussée avec choix ; 50 m sinon", "Toujours 25 m quel que soit l’étage"],
+      "correct": 0,
+      "theme": "Sécurité incendie"
+    },
+    {
+      "q": "À partir de quelle capacité les portes d’un local doivent-elles s’ouvrir dans le sens de l’évacuation ?",
+      "choices": ["Plus de 50 personnes", "Plus de 20 personnes", "Plus de 100 personnes"],
+      "correct": 0,
+      "theme": "Sécurité incendie"
+    },
+    {
+      "q": "Les « voies échelles » sont prévues pour :",
+      "choices": ["Le positionnement des échelles aériennes des secours", "Le stationnement des véhicules de chantier", "Le stockage des extincteurs portatifs"],
+      "correct": 0,
+      "theme": "Sécurité incendie"
+    },
+    {
+      "q": "L’éclairage de sécurité est notamment obligatoire pour :",
+      "choices": ["Les locaux accueillant plus de 50 personnes", "Tous les locaux, sans distinction", "Uniquement les locaux en sous-sol"],
+      "correct": 0,
+      "theme": "Sécurité incendie"
+    }
+  ],
+  "Lecture de plan": [
+    {
+      "q": "Le plan de masse présente en priorité :",
+      "choices": ["Les limites de parcelle, accès, réseaux et la topographie (cotes NGF)", "L’aménagement intérieur des pièces", "Les finitions des façades"],
+      "correct": 0,
+      "theme": "Lecture de plans"
+    },
+    {
+      "q": "Le plan de niveau sert principalement à :",
+      "choices": ["Organiser les espaces intérieurs (pièces, cloisons, ouvertures)", "Montrer l’aspect extérieur du bâtiment", "Indiquer l’implantation sur le terrain uniquement"],
+      "correct": 0,
+      "theme": "Lecture de plans"
+    },
+    {
+      "q": "Le plan de coupe permet de :",
+      "choices": ["Visualiser la verticalité (fondations, planchers, hauteurs, niveaux)", "Voir les matériaux de façade uniquement", "Lister l’équipement mobilier"],
+      "correct": 0,
+      "theme": "Lecture de plans"
+    },
+    {
+      "q": "Un plan de façade renseigne notamment :",
+      "choices": ["Les matériaux, ouvertures, pentes et éléments supérieurs (acrotères, cheminées)", "La disposition des réseaux enterrés", "Le mobilier intégré des cuisines"],
+      "correct": 0,
+      "theme": "Lecture de plans"
+    },
+    {
+      "q": "Sur un plan, les cotes NGF servent à :",
+      "choices": ["Référencer les altitudes/niveaux par rapport au nivellement général de la France", "Donner l’épaisseur des murs porteurs", "Mesurer le giron des escaliers"],
+      "correct": 0,
+      "theme": "Lecture de plans"
+    },
+    {
+      "q": "En perspective à un point de fuite, les lignes parallèles :",
+      "choices": ["Convergent vers un point unique sur la ligne d’horizon", "Restent parallèles entre elles", "Convergent vers deux points opposés"],
+      "correct": 0,
+      "theme": "Représentation graphique"
+    },
+    {
+      "q": "La perspective à deux points de fuite est particulièrement utile pour :",
+      "choices": ["Montrer des vues obliques révélant deux faces d’un objet", "Dessiner des couloirs en vue frontale", "Représenter uniquement des vues aériennes"],
+      "correct": 0,
+      "theme": "Représentation graphique"
+    }
+  ],
+  "Accessibilité": [
+    {
+      "q": "La largeur minimale d’un cheminement extérieur accessible est de :",
+      "choices": ["1,20 m", "0,90 m", "1,50 m"],
+      "correct": 0,
+      "theme": "Accessibilité"
+    },
+    {
+      "q": "La pente recommandée pour une rampe accessible est au plus de :",
+      "choices": ["5 %", "8 %", "12 %"],
+      "correct": 0,
+      "theme": "Accessibilité"
+    },
+    {
+      "q": "Pour une porte accessible, la largeur minimale est de :",
+      "choices": ["0,90 m", "0,80 m", "1,00 m"],
+      "correct": 0,
+      "theme": "Accessibilité"
+    },
+    {
+      "q": "La hauteur des poignées de porte doit être située :",
+      "choices": ["Entre 0,90 m et 1,30 m", "Entre 1,30 m et 1,60 m", "Entre 0,60 m et 0,90 m"],
+      "correct": 0,
+      "theme": "Accessibilité"
+    },
+    {
+      "q": "Un escalier accessible doit présenter :",
+      "choices": ["Une hauteur de marche ≤ 17 cm et un giron ≥ 28 cm", "Des marches sans nez contrasté", "Des largeurs variables sans règle"],
+      "correct": 0,
+      "theme": "Accessibilité"
+    },
+    {
+      "q": "Dans des sanitaires adaptés, on doit trouver :",
+      "choices": ["Un espace de rotation d’au moins Ø 1,50 m et des barres d’appui", "Uniquement un lavabo surélevé", "Un sol brillant et glissant"],
+      "correct": 0,
+      "theme": "Accessibilité"
+    },
+    {
+      "q": "La signalétique accessible comprend notamment :",
+      "choices": ["Des repères visuels et tactiles (bandes podotactiles) et un éclairage suffisant", "Uniquement des pictogrammes non contrastés", "Des textes en très petits caractères"],
+      "correct": 0,
+      "theme": "Accessibilité"
+    }
+  ],
+  "Urbanisme": [
+    {
+      "q": "Quel document définit les règles d’aménagement à l’échelle communale ?",
+      "choices": ["Le Plan Local d’Urbanisme (PLU)", "Le Règlement National d’Urbanisme (RNU)", "Le Dossier des Ouvrages Exécutés (DOE)"],
+      "correct": 0,
+      "theme": "Urbanisme"
+    },
+    {
+      "q": "Le RNU s’applique :",
+      "choices": ["Dans les communes dépourvues de PLU", "Unquement dans les secteurs sauvegardés", "Uniquement aux immeubles de grande hauteur"],
+      "correct": 0,
+      "theme": "Urbanisme"
+    },
+    {
+      "q": "Parmi les pièces d’un dossier de permis, on trouve :",
+      "choices": ["Plans (situation, masse, coupe, façades, toitures) et notice descriptive", "Exclusivement un plan de vente", "Uniquement un plan de mobilier"],
+      "correct": 0,
+      "theme": "Permis de construire"
+    },
+    {
+      "q": "La durée de validité d’un permis de construire est de :",
+      "choices": ["3 ans (prolongeable deux fois un an)", "2 ans non prolongeable", "5 ans sans prolongation possible"],
+      "correct": 0,
+      "theme": "Permis de construire"
+    },
+    {
+      "q": "L’affichage du permis sur le terrain doit être maintenu :",
+      "choices": ["Pendant toute la durée des travaux et au minimum 2 mois", "Uniquement la première semaine de chantier", "Jusqu’à la réception puis retiré immédiatement"],
+      "correct": 0,
+      "theme": "Permis de construire"
+    },
+    {
+      "q": "À proximité d’un monument historique (rayon 500 m), l’Architecte des Bâtiments de France :",
+      "choices": ["Donne un avis conforme", "N’est jamais consulté", "Donne un avis consultatif sans effet"],
+      "correct": 0,
+      "theme": "Patrimoine"
+    },
+    {
+      "q": "La surface de plancher se calcule :",
+      "choices": ["Au nu intérieur des murs, en excluant les zones < 1,80 m de hauteur", "En projetant verticalement l’emprise du bâtiment au sol", "En incluant systématiquement les stationnements"],
+      "correct": 0,
+      "theme": "Urbanisme"
+    },
+    {
+      "q": "L’emprise au sol correspond :",
+      "choices": ["À la projection verticale du volume bâti, supports compris", "À la somme des surfaces intérieures de tous les niveaux", "Aux seuls balcons en porte-à-faux"],
+      "correct": 0,
+      "theme": "Urbanisme"
+    }
+  ],
+  "Acte de construire": [
+    {
+      "q": "Le maître d’ouvrage est :",
+      "choices": ["Le client qui commande et finance le projet", "L’entreprise qui réalise les travaux", "Le bureau de contrôle"],
+      "correct": 0,
+      "theme": "Acteurs du projet"
+    },
+    {
+      "q": "Le maître d’œuvre :",
+      "choices": ["Conçoit le projet et en supervise la réalisation", "Délivre les autorisations administratives", "Finance l’opération"],
+      "correct": 0,
+      "theme": "Acteurs du projet"
+    },
+    {
+      "q": "Parmi les phases de conception selon la loi MOP, on trouve :",
+      "choices": ["ESQ, APS, APD, PRO, DCE", "PC, DOE, DET, AOR", "VRD, GO, CES"],
+      "correct": 0,
+      "theme": "Phases & missions"
+    },
+    {
+      "q": "Le Dossier des Ouvrages Exécutés (DOE) :",
+      "choices": ["Compile les plans et informations « tels que construits » pour la maintenance", "Est un cahier des charges pour l’appel d’offres", "Est une simple notice esthétique"],
+      "correct": 0,
+      "theme": "Documents de projet"
+    },
+    {
+      "q": "La méthode d’estimation « au ratio » consiste à :",
+      "choices": ["Appliquer un coût par unité de référence à un projet similaire", "Additionner les coûts réels en fin de chantier", "Multiplier les quantités par zéro"],
+      "correct": 0,
+      "theme": "Économie de la construction"
+    },
+    {
+      "q": "Le BIM permet notamment :",
+      "choices": ["L’extraction automatique de quantités et une meilleure collaboration", "De remplacer totalement les plans", "De supprimer les contrôles réglementaires"],
+      "correct": 0,
+      "theme": "BIM"
+    },
+    {
+      "q": "Une « information objet » dans une maquette BIM peut contenir :",
+      "choices": ["Matériau, dimensions, données de maintenance", "Uniquement la couleur de l’objet", "Exclusivement le numéro de facture"],
+      "correct": 0,
+      "theme": "BIM"
+    },
+    {
+      "q": "Le relevé d’état des lieux peut être réalisé :",
+      "choices": ["Par relevé direct (mètre, laser) ou indirect (scanner 3D, photogrammétrie)", "Uniquement avec un croquis de mémoire", "Exclusivement par drone"],
+      "correct": 0,
+      "theme": "Relevé & diagnostic"
+    }
+  ]
+}
