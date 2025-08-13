@@ -27,6 +27,11 @@
 
   let BANKS=null; let BANK_KEYS=[];
 
+  // --- Element selectors ---
+  const startScreen = document.getElementById('start-screen');
+  const gameContainer = document.getElementById('game-container');
+  const newGameBtn = document.getElementById('newGameBtn');
+
   const canvas=document.getElementById('game'), ctx=canvas.getContext('2d');
   const scoreEl=document.getElementById('score'), livesIconsEl=document.getElementById('livesIcons');
   const qIndexEl=document.getElementById('qIndex'), qTotalEl=document.getElementById('qTotal');
@@ -36,7 +41,6 @@
   const pauseBtn=document.getElementById('pauseBtn');
   const downloadCsvBtn=document.getElementById('downloadCsv');
   const difficultySel=document.getElementById('difficulty'), themePlaySel=document.getElementById('themePlay');
-  const newGameBtn = document.getElementById('newGameBtn');
   const tryAgainBtn = document.getElementById('tryAgainBtn');
   const W=canvas.width, H=canvas.height;
 
@@ -96,11 +100,14 @@
   function getBankFor(key){ return (BANKS && BANKS[key]) ? BANKS[key] : []; }
 
   function startGame(){
+    // --- Show game container, hide start screen ---
+    startScreen.hidden = true;
+    gameContainer.hidden = false;
+
     const bankKey=themePlaySel.value || getDefaultKey();
     const base=getBankFor(bankKey);
     if(!base.length){ notice('Ce thème ne contient aucune question.', 'var(--danger)'); overlay.hidden=false; return; }
 
-    newGameBtn.hidden = true;
     tryAgainBtn.hidden = true;
     downloadCsvBtn.hidden = true;
     overlay.hidden=true;
@@ -271,8 +278,8 @@
     if(d==='normal'){ state.player.cooldown=280; state.enemySpeed=42; state.enemyFireBase=1.6; state.enemyBulletSpeedBase=160; }
     if(d==='hard'){ state.player.cooldown=320; state.enemySpeed=52; state.enemyFireBase=1.0; state.enemyBulletSpeedBase=190; }
   }
-  applyDifficulty();
-
+  
+  // --- Event Listeners ---
   newGameBtn.onclick = startGame;
   tryAgainBtn.onclick = startGame;
   pauseBtn.onclick=togglePause;
@@ -294,12 +301,13 @@
       });
       const p=new URLSearchParams(location.search); const t=(p.get('theme')||'').trim();
       if(t && BANK_KEYS.includes(t)){ themePlaySel.value=t; } else { themePlaySel.selectedIndex=0; }
-      const base=getBankFor(themePlaySel.value); qTotalEl.textContent=base.length;
-      questionTextEl.textContent=`Thème sélectionné : ${themePlaySel.value}`;
+      const base=getBankFor(themePlaySel.value);
+      qTotalEl.textContent=base.length;
+      questionTextEl.textContent=`Thème : ${themePlaySel.value} — Prêt à jouer !`;
+      applyDifficulty();
     }catch(e){
-      console.warn('Échec JSON', e);
-      alert('Impossible de charger "questions-btp.json". Ouvrez via un serveur local (ex: python -m http.server) ou hébergez les fichiers.');
-      themePlaySel.innerHTML='<option>Indisponible</option>';
+      console.warn('Échec du chargement des questions (JSON)', e);
+      document.getElementById('start-screen').innerHTML = `<h1>Erreur</h1><p class="rules">Impossible de charger le fichier de questions <code>questions-btp.json</code>.<br/>Vérifiez que le fichier est présent et que vous lancez le jeu depuis un serveur web local.</p>`;
     }
   }
   document.addEventListener('DOMContentLoaded', init);
